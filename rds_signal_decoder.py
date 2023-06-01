@@ -100,4 +100,4 @@ class RDSSignalDecoder:
         # we need to undo this so we xor the bits one off
         # i.e. [1, 0, 0, 1, 1]
         # [1 xor 0: 1, 0 xor 0: 0, 0 xor 1: 1, 1 xor 1: 0]
-        return bits[1:] != bits[:-1]
+        return [int(bit) for bit in bits[1:] != bits[:-1]]
