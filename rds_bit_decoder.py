@@ -25,34 +25,31 @@ class RDSBitDecoder:
       16b              10b
     """
 
-    def __init__(self, save_to_file: bool, file_name=None) -> None:
+    def __init__(self, save: tuple[bool, str], read: tuple[bool, str]) -> None:
         self.program_id = ''
         self.program_type = ''
         self.radio_name = '_' * 8
         self.radio_text = '_' * 64
         self.bits = []
-        self.save_to_file = save_to_file
-        self.file_name = file_name
+        self.save_to_file = save
+        self.save = save[0]
+        self.save_name = save[1]
+        self.read = read[0]
+        self.read_name = read[1]
         self.first_write = True
 
-        if not self.save_to_file:
-            self.bits = RDSBitDecoder._read_array_from_file(self.file_name)
+        if self.read:
+            self.bits = RDSBitDecoder._read_array_from_file(self.read_name)
             self.decode(self.bits)
 
     def decode(self, bits: np.ndarray) -> None:
-        my_hits = []
         self.bits = bits
-        if self.save_to_file:
+        if self.save:
             if self.first_write:
-                RDSBitDecoder._write_array_to_file(bits, self.file_name)
+                RDSBitDecoder._write_array_to_file(bits, self.save_name)
                 self.first_write = False
             else:
-                RDSBitDecoder._append_array_to_file(bits, self.file_name)
-
-        for i in range(len(bits)-26):
-            h = self._rds_syndrome(bits, i, 26)
-            if h:
-                my_hits.append((i, h))
+                RDSBitDecoder._append_array_to_file(bits, self.save_name)
 
         groups = RDS.find_rds_groups(bits)
         for group in groups:
@@ -122,52 +119,6 @@ class RDSBitDecoder:
                         d_bits[:8])) + chr(RDS._bits_to_int(d_bits[8:]))
                     self.radio_text = self.radio_text[:char_pos + 2] + \
                         text + self.radio_text[char_pos + 4:]
-
-    def _rds_syndrome(self, message: List[int], m_offset: int, mlen: int) -> Optional[str]:
-        """
-        Calculates the syndrome of a given message and returns the corresponding
-        offset name if it matches any syndrome.
-
-        Args:
-            message (List[int]): The message to calculate the syndrome for.
-            m_offset (int): The offset of the message.
-            mlen (int): The length of the message.
-
-        Returns:
-            Optional[str]: The offset name if the checkword matches any
-            syndrome, otherwise None.
-
-        Raises:
-            ValueError: If the mlen is not equal to 16 or 26.
-        """
-        POLY = 0x5B9  # 10110111001, g(x)=x^10+x^8+x^7+x^5+x^4+x^3+1
-        PLEN = 10
-        SYNDROME = [383, 14, 303, 663, 748]
-        OFFSET_NAME = ['A', 'B', 'C', 'D', 'C\'']
-        reg = 0
-
-        if mlen != 16 and mlen != 26:
-            raise ValueError("mlen must be 16 or 26")
-
-        # Start calculation
-        for i in range(mlen):
-            reg = (reg << 1) | message[m_offset + i]
-            if reg & (1 << PLEN):
-                reg = reg ^ POLY
-
-        for i in range(PLEN, 0, -1):
-            reg = reg << 1
-            if reg & (1 << PLEN):
-                reg = reg ^ POLY
-
-        checkword = reg & ((1 << PLEN) - 1)
-
-        # End calculation
-        for i in range(5):
-            if checkword == SYNDROME[i]:
-                return OFFSET_NAME[i]
-
-        return None
 
     def _write_array_to_file(array: List[int], filename: str) -> None:
         """

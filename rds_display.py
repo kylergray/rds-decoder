@@ -26,7 +26,7 @@ def main():
     if args.file:
         bit_file = args.file
         if os.path.isfile(bit_file):
-            RDSBitDecoder(False, bit_file)
+            RDSBitDecoder((False, None), (True, bit_file))
         else:
             raise ValueError('Invalid file')
 
@@ -39,17 +39,17 @@ def main():
         offset_freq = 250000
         center_freq = station_freq - offset_freq
         sample_rate = int(57e3*20)
-        N = int(1024000*0.5)
+        N = int(1024000*2)
 
         sdr = RtlSdr()
         sdr.sample_rate = sample_rate
         sdr.center_freq = center_freq
-        sdr.freq_correction = -52
+        sdr.freq_correction = 52
         sdr.gain = 42.0
 
         decoder = RDSSignalDecoder(sample_rate)
-        bit_decoder = RDSBitDecoder(True if args.save else False,
-                                    args.save if args.save else 'bits.txt')
+        bit_decoder = RDSBitDecoder((True if args.save else False, args.save),
+                                    (False, None))
 
         while True:
             samples = sdr.read_samples(N)

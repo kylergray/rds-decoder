@@ -1,4 +1,4 @@
-from typing import Dict, List, Union, Tuple
+from typing import Dict, List, Union, Tuple, Optional
 
 
 class RDS:
@@ -59,7 +59,7 @@ class RDS:
         for bit_pos in range(len(bits) - 104):
             group = {}
             for block_i in range(4):
-                block_type = RDS.rds_syndrome(bits, bit_pos, 26)
+                block_type = RDS._rds_syndrome(bits, bit_pos, 26)
                 if block_type == RDS.BLOCK_TYPES[block_i]:
                     group.update({block_type: bit_pos})
                 bit_pos += 26
@@ -150,29 +150,48 @@ class RDS:
         hex_string = hex(decimal_value)[2:]
         return hex_string.upper()
 
-    def rds_syndrome(message, m_offset, mlen):
+    def _rds_syndrome(message: List[int], m_offset: int, mlen: int) -> Optional[str]:
+        """
+        Calculates the syndrome of a given message and returns the corresponding
+        offset name if it matches any syndrome.
+
+        Args:
+            message (List[int]): The message to calculate the syndrome for.
+            m_offset (int): The offset of the message.
+            mlen (int): The length of the message.
+
+        Returns:
+            Optional[str]: The offset name if the checkword matches any
+            syndrome, otherwise None.
+
+        Raises:
+            ValueError: If the mlen is not equal to 16 or 26.
+        """
         POLY = 0x5B9  # 10110111001, g(x)=x^10+x^8+x^7+x^5+x^4+x^3+1
         PLEN = 10
         SYNDROME = [383, 14, 303, 663, 748]
         OFFSET_NAME = ['A', 'B', 'C', 'D', 'C\'']
         reg = 0
 
-        if ((mlen != 16) and (mlen != 26)):
-            raise ValueError
-        # start calculation
+        if mlen != 16 and mlen != 26:
+            raise ValueError("mlen must be 16 or 26")
+
+        # Start calculation
         for i in range(mlen):
-            reg = (reg << 1) | (message[m_offset+i])
-            if (reg & (1 << PLEN)):
+            reg = (reg << 1) | message[m_offset + i]
+            if reg & (1 << PLEN):
                 reg = reg ^ POLY
+
         for i in range(PLEN, 0, -1):
             reg = reg << 1
-            if (reg & (1 << PLEN)):
+            if reg & (1 << PLEN):
                 reg = reg ^ POLY
-        checkword = reg & ((1 << PLEN)-1)
-        # end calculation
-        for i in range(0, 5):
-            if (checkword == SYNDROME[i]):
-                # print "checkword matches syndrome for offset", OFFSET_NAME[i]
+
+        checkword = reg & ((1 << PLEN) - 1)
+
+        # End calculation
+        for i in range(5):
+            if checkword == SYNDROME[i]:
                 return OFFSET_NAME[i]
 
         return None
