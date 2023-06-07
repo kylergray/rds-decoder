@@ -57,7 +57,7 @@ def main():
 
             bit_decoder.decode(bits)
 
-            sdr.close()
+        sdr.close()
 
 
 if __name__ == "__main__":

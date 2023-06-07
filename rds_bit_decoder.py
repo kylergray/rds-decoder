@@ -52,6 +52,15 @@ class RDSBitDecoder:
                 RDSBitDecoder._append_array_to_file(bits, self.save_name)
 
         groups = RDS.find_rds_groups(bits)
+        
+        max_blocks = int(len(bits) / 26)
+        total_blocks = 0
+        for g in groups:
+            total_blocks += len(g)
+        
+        print(f'{total_blocks} / {max_blocks} = {total_blocks / max_blocks * 100}%')
+        RDSBitDecoder._log_stats(max_blocks, total_blocks)
+
         for group in groups:
             self._decode_rds_group(group)
             print(
@@ -103,8 +112,8 @@ class RDSBitDecoder:
                     and 'D' in group):
                 # clear screen
                 clear = b_bits[11] == 1
-                if clear:
-                    self.radio_text = '_' * 64
+                # if clear:
+                #     self.radio_text = '_' * 64
 
                 # which position
                 # ____ ____ ____ ____ ... ____
@@ -153,6 +162,21 @@ class RDSBitDecoder:
         with open(filename, 'a') as file:
             for num in array:
                 file.write(str(num) + '\n')
+
+    def _log_stats(max_blocks: int, total_blocks: int) -> None:
+        """
+        Appends the elements of an array to a file. Each element is appended on
+        a new line.
+
+        Args:
+            array (List[int]): The array of integers to append to the file.
+            filename (str): The name of the file to append the array to.
+
+        Returns:
+            None
+        """
+        with open('stats.txt', 'a') as file:
+            file.write(f'{total_blocks}, {max_blocks}\n')
 
     def _read_array_from_file(filename: str) -> List[int]:
         """
