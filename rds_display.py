@@ -39,24 +39,25 @@ def main():
         offset_freq = 250000
         center_freq = station_freq - offset_freq
         sample_rate = int(57e3*20)
-        N = int(1024000*2)
+        N = int(1024000*1)
 
         sdr = RtlSdr()
         sdr.sample_rate = sample_rate
         sdr.center_freq = center_freq
-        sdr.freq_correction = 52
         sdr.gain = 42.0
 
         decoder = RDSSignalDecoder(sample_rate)
         bit_decoder = RDSBitDecoder((True if args.save else False, args.save),
                                     (False, None))
 
-        while True:
-            samples = sdr.read_samples(N)
-            decoder.load_samples(samples)
-            bits = decoder.read_bits()
+        # while True:
+        samples = sdr.read_samples(N)
+        decoder.load_samples(samples)
+        bits = decoder.read_bits()
 
-            bit_decoder.decode(bits)
+        bit_decoder.decode(bits)
+
+        sdr.close()
 
 
 if __name__ == "__main__":

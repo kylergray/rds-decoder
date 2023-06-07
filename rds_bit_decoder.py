@@ -54,8 +54,8 @@ class RDSBitDecoder:
         groups = RDS.find_rds_groups(bits)
         for group in groups:
             self._decode_rds_group(group)
-            print(self.program_id, self.program_type,
-                  self.radio_name, self.radio_text)
+            print(
+                f'PID: {self.program_id} Type: {self.program_type} Name: {self.radio_name} Text: {self.radio_text}')
 
     def _decode_rds_group(self, group: Dict[str, int]):
         info = {}
@@ -68,7 +68,8 @@ class RDSBitDecoder:
             a_bits = self.bits[group['A']:group['A'] + RDS.BLK_SIZ]
 
             info.update(RDS._decode_block_a(a_bits))
-            self.program_id = info['PID']
+            if len(info['PID']) > 1:
+                self.program_id = info['PID']
 
         if 'C' in group:
             c_bits = self.bits[group['C']:group['C'] + RDS.BLK_SIZ]
@@ -80,7 +81,8 @@ class RDSBitDecoder:
             b_bits = self.bits[group['B']:group['B'] + RDS.BLK_SIZ]
 
             info.update(RDS._decode_block_b(b_bits))
-            self.program_type = RDS.get_program_type(info['PTY'])
+            if len(info['PTY']) > 1:
+                self.program_type = RDS.get_program_type(info['PTY'])
 
             # 0A is 8 byte radio name
             if (info['GROUP_TYPE'] == '0'

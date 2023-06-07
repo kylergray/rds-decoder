@@ -72,7 +72,6 @@ def rds_syndrome(message, m_offset, mlen):
     # end calculation
     for i in range(0,5):
         if(checkword==SYNDROME[i]):
-            #print "checkword matches syndrome for offset", OFFSET_NAME[i]
             return OFFSET_NAME[i]
 
     return None

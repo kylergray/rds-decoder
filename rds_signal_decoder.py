@@ -29,9 +29,21 @@ class RDSSignalDecoder:
         while len(self._samples) > 0:
             # process
             samples = self._samples.pop(0)
+
+            plt.figure()
+            plt.title("Raw Power Spectrum Density Centered at 95.7 MHz")
+            plt.psd(samples, Fs=self._sample_rate)
             d_signal, dsig_samp_ps = self._demod(samples)
+            plt.figure()
+            plt.title('Power Spectrum After Demodulation and Bandpass')
+            plt.psd(d_signal, Fs=dsig_samp_ps)
+            plt.show()
             rds_filt_signal, rds_filt_samp_ps = self._filter_rds_segment(
                 d_signal, dsig_samp_ps)
+            plt.figure()
+            plt.title('Power Spectrum After Demodulation and Bandpass')
+            plt.plot(rds_filt_signal[:200])
+            plt.show()
             self._bitstream.append(self._create_bits(
                 rds_filt_signal, rds_filt_samp_ps))
 
@@ -92,6 +104,10 @@ class RDSSignalDecoder:
     def _create_bits(self, rds_signal: np.ndarray, rds_samp_ps: np.ndarray) -> np.ndarray:
         # calculate the phase and determine if it is in the -90deg range or +90deg range
         # matches the BPSK protocol
+        plt.figure()
+        plt.title('Raw Bits (first 200 samples)')
+        plt.plot(np.abs(np.arctan2(rds_signal.imag, rds_signal.real))[:200])
+        plt.show()
         bits = np.abs(np.arctan2(rds_signal.imag, rds_signal.real)) < np.pi / 2
         dec_step = int(rds_samp_ps / self._RDS_BPS)
         bits = bits[range(0, len(bits), dec_step)]
@@ -100,4 +116,10 @@ class RDSSignalDecoder:
         # we need to undo this so we xor the bits one off
         # i.e. [1, 0, 0, 1, 1]
         # [1 xor 0: 1, 0 xor 0: 0, 0 xor 1: 1, 1 xor 1: 0]
-        return [int(bit) for bit in bits[1:] != bits[:-1]]
+        bits = [int(bit) for bit in bits[1:] != bits[:-1]]
+        
+        plt.figure()
+        plt.title('Bits After Undoing Differential Coding and Decimation')
+        plt.plot(bits[:200])
+        plt.show()
+        return bits
