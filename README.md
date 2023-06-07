@@ -8,11 +8,10 @@ rds_display.py [-h] (-f FILE | -r FREQUENCY) [-s SAVE]
 Display the decoded RDS information from an FM radio station using an RTL-SDR!
 
 options:
-  -h, --help            show this help message and exit
-  -f FILE, --file FILE  Read from the given bit file
-  -r FREQUENCY, --radio FREQUENCY
-                        Tune to the specified radio frequency
-  -s SAVE, --save SAVE  Save the recording to the given file path
+ * -h, --help            show this help message and exit
+ * -f FILE, --file FILE  Read from the given bit file
+ * -r FREQUENCY, --radio FREQUENCY Tune to the specified radio frequency
+ * -s SAVE, --save SAVE  Save the recording to the given file path
 
 ## Links
 * https://wiki.gnuradio.org/index.php?title=Tutorials
