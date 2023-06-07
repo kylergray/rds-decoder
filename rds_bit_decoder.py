@@ -53,13 +53,12 @@ class RDSBitDecoder:
 
         groups = RDS.find_rds_groups(bits)
         
-        max_blocks = int(len(bits) / 26)
-        total_blocks = 0
-        for g in groups:
-            total_blocks += len(g)
+        # max_blocks = int(len(bits) / 26)
+        # total_blocks = 0
+        # for g in groups:
+        #     total_blocks += len(g)
         
-        print(f'{total_blocks} / {max_blocks} = {total_blocks / max_blocks * 100}%')
-        RDSBitDecoder._log_stats(max_blocks, total_blocks)
+        # RDSBitDecoder._log_stats(max_blocks, total_blocks)
 
         for group in groups:
             self._decode_rds_group(group)
