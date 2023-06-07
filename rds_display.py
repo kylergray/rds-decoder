@@ -50,14 +50,14 @@ def main():
         bit_decoder = RDSBitDecoder((True if args.save else False, args.save),
                                     (False, None))
 
-        # while True:
-        samples = sdr.read_samples(N)
-        decoder.load_samples(samples)
-        bits = decoder.read_bits()
+        while True:
+            samples = sdr.read_samples(N)
+            decoder.load_samples(samples)
+            bits = decoder.read_bits()
 
-        bit_decoder.decode(bits)
+            bit_decoder.decode(bits)
 
-        sdr.close()
+            sdr.close()
 
 
 if __name__ == "__main__":
